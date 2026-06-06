@@ -1,0 +1,71 @@
+// prisma/schema.prisma
+// File ini adalah "peta" struktur database kita.
+// Setiap model = satu tabel di PostgreSQL.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Tabel portfolio: menyimpan semua info diri mahasiswa
+model Portfolio {
+  id         String    @id @default(cuid())
+  name       String
+  email      String?
+  bio        String?
+  imageUrl   String?   // URL foto profil
+
+  // Info akademik
+  major      String?   // Jurusan
+  semester   String?   // Semester saat ini
+  university String?   // Nama kampus
+  location   String?   // Kota, Negara — contoh: "Bandung, Indonesia"
+
+  // Skills & Tools — pisahkan dengan koma: "React, Next.js, TypeScript"
+  skills     String?
+
+  // Social media links
+  github     String?
+  linkedin   String?
+  instagram  String?
+  tiktok     String?
+
+  projects   Project[]
+  createdAt  DateTime  @default(now())
+}
+
+// Tabel project: menyimpan daftar project milik mahasiswa
+model Project {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  category    String?        // Contoh: "Web App", "Mobile App", "IoT", "Data / ML"
+  techStack   String         // Contoh: "React, Node.js, PostgreSQL"
+  liveUrl     String?
+  repoUrl     String?
+  year        String?        // Tahun pengerjaan: "2024"
+
+  images      ProjectImage[] // Relasi ke banyak foto
+
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Tabel foto project: satu project bisa punya banyak foto
+model ProjectImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0) // Urutan tampil foto
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  createdAt DateTime @default(now())
+}
